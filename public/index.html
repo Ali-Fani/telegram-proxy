@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Telegram Proxy</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; max-width: 720px; margin: 3rem auto; padding: 0 1.25rem; line-height: 1.6; }
+  code, pre { background: rgba(127,127,127,.12); border-radius: 6px; }
+  code { padding: .1em .4em; }
+  pre { padding: 1em; overflow-x: auto; }
+  .badge { display: inline-block; padding: .2em .7em; border-radius: 999px; font-size: .85em; }
+  .ok { background: #e6f4ea; color: #137333; }
+  .fail { background: #fce8e6; color: #a50e0e; }
+  h1 { margin-bottom: .2em; }
+  .muted { opacity: .7; }
+</style>
+</head>
+<body>
+<h1>Telegram Proxy</h1>
+<p class="muted">A thin Vercel proxy in front of the Telegram Bot API.</p>
+<p>Status: <span id="status" class="badge">checking…</span></p>
+
+<h2>Endpoints</h2>
+<ul>
+  <li><code>GET /api/health</code> — liveness check</li>
+  <li><code>GET /api</code> — endpoint index (JSON)</li>
+  <li><code>POST /api/send</code> — send via server-side token<br>
+    <span class="muted">Body: <code>{ "chat_id": "…", "text": "…" }</code> (<code>chat_id</code> optional when a default is configured). Optional <code>method</code> field or <code>?method=</code> for other Bot API methods. Send secret via <code>x-proxy-secret</code> header when configured.</span></li>
+  <li><code>/api/bot&lt;token&gt;/&lt;method&gt;</code> — transparent proxy, drop-in for <code>api.telegram.org</code></li>
+</ul>
+
+<h2>Example</h2>
+<pre>curl -X POST "$PROXY_URL/api/send" \
+  -H "Content-Type: application/json" \
+  -H "x-proxy-secret: $PROXY_SECRET" \
+  -d '{"text":"deploy succeeded"}'</pre>
+
+<p class="muted">Source: <a href="https://github.com/Ali-Fani/telegram-proxy">github.com/Ali-Fani/telegram-proxy</a></p>
+
+<script>
+  fetch("/api/health")
+    .then(function (r) { return r.json(); })
+    .then(function (j) {
+      var el = document.getElementById("status");
+      if (j && j.ok) { el.textContent = "operational"; el.className = "badge ok"; }
+      else { el.textContent = "degraded"; el.className = "badge fail"; }
+    })
+    .catch(function () {
+      var el = document.getElementById("status");
+      el.textContent = "unreachable"; el.className = "badge fail";
+    });
+</script>
+</body>
+</html>
