@@ -35,10 +35,10 @@
 </ul>
 
 <h2>Shoutrrr generic examples</h2>
-<pre>shoutrrr send -u 'generic://$PROXY_HOST/api/generic?chat_id=$CHAT_ID' 'hello'
+<pre id="ex-generic">shoutrrr send -u 'generic://$PROXY_HOST/api/generic?chat_id=$CHAT_ID' 'hello'
 shoutrrr send -u 'generic://$PROXY_HOST/api/generic?template=json&amp;chat_id=$CHAT_ID' 'hello'</pre>
 <p class="muted">When <code>DEFAULT_CHAT_ID</code> is set, <code>chat_id</code> is optional — omit it to use the default, or pass a custom one to override it:</p>
-<pre># uses DEFAULT_CHAT_ID (no chat_id sent)
+<pre id="ex-generic-override"># uses DEFAULT_CHAT_ID (no chat_id sent)
 shoutrrr send -u 'generic://$PROXY_HOST/api/generic?template=json' 'hello'
 
 # overrides DEFAULT_CHAT_ID via forwarded query var ...
@@ -48,18 +48,34 @@ shoutrrr send -u 'generic://$PROXY_HOST/api/generic?template=json&amp;chat_id=12
 shoutrrr send -u 'generic://$PROXY_HOST/api/generic?template=json&amp;$chat_id=123456' 'hello'</pre>
 
 <h2>Example</h2>
-<pre>curl -X POST "$PROXY_URL/api/send" \
+<pre id="ex-curl">curl -X POST "$PROXY_URL/api/send" \
   -H "Content-Type: application/json" \
   -H "x-proxy-secret: $PROXY_SECRET" \
   -d '{"text":"deploy succeeded"}'</pre>
 <p class="muted">When <code>DEFAULT_CHAT_ID</code> is set, <code>chat_id</code> can be omitted (uses the default) or passed to override it:</p>
-<pre>curl -X POST "$PROXY_URL/api/send" \
+<pre id="ex-curl-override">curl -X POST "$PROXY_URL/api/send" \
   -H "Content-Type: application/json" \
   -d '{"chat_id":"123456","text":"custom chat override"}'</pre>
 
 <p class="muted">Source: <a href="https://github.com/Ali-Fani/telegram-proxy">github.com/Ali-Fani/telegram-proxy</a></p>
 
 <script>
+  (function () {
+    // Fill $PROXY_HOST / $PROXY_URL placeholders with this page's own address,
+    // so examples are copy-paste ready on any deployment (Vercel URL, custom
+    // domain, preview deployment, localhost) with no hardcoding.
+    try {
+      var host = window.location.host;
+      var origin = window.location.origin;
+      ["ex-generic", "ex-generic-override", "ex-curl", "ex-curl-override"].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = el.textContent
+          .replace(/\$PROXY_HOST/g, host)
+          .replace(/\$PROXY_URL/g, origin);
+      });
+    } catch (e) { /* keep placeholders on failure */ }
+  })();
   fetch("/api/health")
     .then(function (r) { return r.json(); })
     .then(function (j) {
