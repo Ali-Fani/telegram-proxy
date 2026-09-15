@@ -30,13 +30,32 @@
   <li><code>POST /api/send</code> — send via server-side token<br>
     <span class="muted">Body: <code>{ "chat_id": "…", "text": "…" }</code> (<code>chat_id</code> optional when a default is configured). Optional <code>method</code> field or <code>?method=</code> for other Bot API methods. Send secret via <code>x-proxy-secret</code> header when configured.</span></li>
   <li><code>/api/bot&lt;token&gt;/&lt;method&gt;</code> — transparent proxy, drop-in for <code>api.telegram.org</code></li>
+  <li><code>POST /api/generic</code> — <a href="https://shoutrrr.nickfedor.com/v0.21.0/services/specialized/generic/">Shoutrrr generic</a> webhook receiver<br>
+    <span class="muted">Accepts raw <code>text/plain</code> (no template) or <code>template=json</code> (<code>{"{"}title, message{"}"}</code>). Chat via <code>?chat_id=</code> query (forwarded by Shoutrrr), <code>$chat_id</code> JSON field, or server default. Secret via <code>x-proxy-secret</code> header when configured.</span></li>
 </ul>
+
+<h2>Shoutrrr generic examples</h2>
+<pre>shoutrrr send -u 'generic://$PROXY_HOST/api/generic?chat_id=$CHAT_ID' 'hello'
+shoutrrr send -u 'generic://$PROXY_HOST/api/generic?template=json&amp;chat_id=$CHAT_ID' 'hello'</pre>
+<p class="muted">When <code>DEFAULT_CHAT_ID</code> is set, <code>chat_id</code> is optional — omit it to use the default, or pass a custom one to override it:</p>
+<pre># uses DEFAULT_CHAT_ID (no chat_id sent)
+shoutrrr send -u 'generic://$PROXY_HOST/api/generic?template=json' 'hello'
+
+# overrides DEFAULT_CHAT_ID via forwarded query var ...
+shoutrrr send -u 'generic://$PROXY_HOST/api/generic?template=json&amp;chat_id=123456' 'hello'
+
+# ... or via extra JSON data field ($chat_id lands in the JSON body)
+shoutrrr send -u 'generic://$PROXY_HOST/api/generic?template=json&amp;$chat_id=123456' 'hello'</pre>
 
 <h2>Example</h2>
 <pre>curl -X POST "$PROXY_URL/api/send" \
   -H "Content-Type: application/json" \
   -H "x-proxy-secret: $PROXY_SECRET" \
   -d '{"text":"deploy succeeded"}'</pre>
+<p class="muted">When <code>DEFAULT_CHAT_ID</code> is set, <code>chat_id</code> can be omitted (uses the default) or passed to override it:</p>
+<pre>curl -X POST "$PROXY_URL/api/send" \
+  -H "Content-Type: application/json" \
+  -d '{"chat_id":"123456","text":"custom chat override"}'</pre>
 
 <p class="muted">Source: <a href="https://github.com/Ali-Fani/telegram-proxy">github.com/Ali-Fani/telegram-proxy</a></p>
 
